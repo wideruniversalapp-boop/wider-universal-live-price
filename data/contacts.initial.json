@@ -1,0 +1,33 @@
+{
+  "title": "Contact our sales team",
+  "intro": "Speak to the sales team at your nearest branch for prices, availability and project quotations.",
+  "branches": [
+    {
+      "id": "jeddah",
+      "name": "Jeddah Branch",
+      "location": "",
+      "active": true,
+      "contacts": [
+        { "id": "jeddah-rauf", "name": "Rauf", "role": "", "phone": "+966 51 121 1028", "email": "Salesjeddah@wideruniversal.com" }
+      ]
+    },
+    {
+      "id": "riyadh",
+      "name": "Riyadh Branch",
+      "location": "",
+      "active": true,
+      "contacts": [
+        { "id": "riyadh-savan-abdulla", "name": "Savan Abdulla", "role": "", "phone": "+966 56 332 6309", "email": "abdulla@theuniversalgrp.com" }
+      ]
+    },
+    {
+      "id": "alkhobar",
+      "name": "Al Khobar Branch",
+      "location": "",
+      "active": true,
+      "contacts": [
+        { "id": "alkhobar-sulthan", "name": "Sulthan", "role": "", "phone": "+966 55 882 9335", "email": "Saleskhobar@wideruniversal.com" }
+      ]
+    }
+  ]
+}

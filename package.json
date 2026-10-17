@@ -1,0 +1,63 @@
+{
+  "name": "wider-universal-catalog",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit -p . && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit -p .",
+    "test": "vitest run tests/unit",
+    "test:rules": "firebase emulators:exec --only firestore,storage --project demo-wider \"vitest run tests/rules\"",
+    "emulators": "firebase emulators:start --only auth,firestore,storage --project demo-wider --export-on-exit ./.emulator-data",
+    "seed:emulator": "tsx scripts/seed.ts --emulator --project demo-wider",
+    "seed": "tsx scripts/seed.ts",
+    "set-admin": "tsx scripts/set-admin.ts",
+    "deploy:staging": "node scripts/check-deploy-env.mjs staging && tsc --noEmit -p . && vite build --mode staging && firebase deploy --project staging",
+    "deploy:production": "node scripts/check-deploy-env.mjs production && tsc --noEmit -p . && vite build --mode production && firebase deploy --project production",
+    "emulators:resume": "firebase emulators:start --only auth,firestore,storage --project demo-wider --import ./.emulator-data --export-on-exit",
+    "test:all": "npm run typecheck && npm test && npm run test:python && npm run test:rules",
+    "verify:emulator": "tsx scripts/verify-import.ts --emulator --project demo-wider",
+    "verify": "tsx scripts/verify-import.ts",
+    "extract": "python extraction/extract.py && python extraction/reconcile.py",
+    "backup": "tsx scripts/backup-products.ts",
+    "restore": "tsx scripts/restore-products.ts",
+    "pdf:extract": "python extraction/pdf_prices.py",
+    "pdf:apply": "tsx scripts/apply-pdf-prices.ts",
+    "index:rebuild": "tsx scripts/catalog-index.ts",
+    "test:python": "python -m unittest discover -s tests/python",
+    "contacts:publish": "tsx scripts/publish-contacts.ts"
+  },
+  "dependencies": {
+    "@fontsource/saira": "^5.3.0",
+    "firebase": "^13.0.0",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.9",
+    "papaparse": "^5.4.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^7.18.4",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^6.0.0",
+    "@google-cloud/firestore": "^9.3.1",
+    "@google-cloud/storage": "^8.4.0",
+    "@types/node": "^22.10.0",
+    "@types/papaparse": "^5.3.15",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "firebase-admin": "^14.5.0",
+    "firebase-tools": "^13.29.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.11",
+    "vitest": "^2.1.8"
+  },
+  "overrides": {
+    "@grpc/grpc-js": "^1.14.6",
+    "universal-analytics": "0.5.3"
+  }
+}

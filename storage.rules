@@ -1,0 +1,45 @@
+rules_version = '2';
+
+// Product and brand images are public; only administrators (custom claim
+// `admin: true`, set server-side) may upload, replace or delete them.
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isAdmin() {
+      return request.auth != null && request.auth.token.get('admin', false) == true;
+    }
+
+    function validImage() {
+      return request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/(png|jpeg|webp|gif)');
+    }
+
+    match /products/{productId}/{file} {
+      allow read: if true;
+      allow create, update: if isAdmin() && validImage();
+      allow delete: if isAdmin();
+    }
+
+    match /brands/{brandId}/{file} {
+      allow read: if true;
+      allow create, update: if isAdmin() && validImage();
+      allow delete: if isAdmin();
+    }
+
+    // Company logo files. New uploads get a new name (logo-<timestamp>.<ext>), so the
+    // currently published logo is never overwritten; SVG is not accepted.
+    match /branding/{file} {
+      allow read: if true;
+      allow create: if isAdmin()
+        && resource == null
+        && file.matches('logo-[0-9]{10,16}\\.(png|jpg|webp)')
+        && request.resource.size < 2 * 1024 * 1024
+        && request.resource.contentType.matches('image/(png|jpeg|webp)');
+      allow update: if false;
+      allow delete: if isAdmin();
+    }
+
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,0 +1,56 @@
+{
+ "global": {
+  "maintenanceMode": false,
+  "showHighlights": false
+ },
+ "contacts": {
+  "list": [
+   {
+    "label": "Jeddah",
+    "id": "jeddah",
+    "order": 0,
+    "phones": [
+     "+966 53 335 4973",
+     "+966 53 334 5823",
+     "+966 55 002 9471"
+    ]
+   },
+   {
+    "phones": [
+     "+966 55 002 9701",
+     "+966 55 412 9348"
+    ],
+    "id": "riyadh",
+    "order": 1,
+    "label": "Riyadh"
+   },
+   {
+    "phones": [
+     "+966 53 335 7983"
+    ],
+    "id": "alkhobar",
+    "label": "Al Khobar",
+    "order": 2
+   },
+   {
+    "phones": [
+     "+966 55 607 7884"
+    ],
+    "order": 3,
+    "id": "khamis",
+    "label": "Khamis Mushait"
+   },
+   {
+    "isManager": true,
+    "order": 4,
+    "label": "Sales Manager",
+    "id": "salesmanager",
+    "name": "Varghese Pulickan",
+    "role": "Sales Manager",
+    "phones": [
+     "+966 55 002 3859"
+    ]
+   }
+  ]
+ }
+}

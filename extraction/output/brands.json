@@ -1,0 +1,81 @@
+[
+ {
+  "id": "CAMLINK",
+  "createTime": "2026-08-25T15:39:36.039856Z",
+  "updateTime": "2026-09-12T15:53:26.850615Z",
+  "fields": {
+   "title": "THRUSCAN & CAMLINK PRODUCT",
+   "bannerBase64": {
+    "source": "bannerBase64",
+    "file": "images/brand_CAMLINK_bannerBase64.jpg",
+    "mime": "image/jpeg",
+    "bytes": 183239,
+    "sha256": "9f40c8719a925d8a2620fb6bd8f1f16041ca3020a4236a26b222eff6fae6da0c"
+   },
+   "subtitle": "",
+   "name": "CAMLINK"
+  }
+ },
+ {
+  "id": "DAHUA WISSUALRAM-FIRE ALARM SYSTEM",
+  "createTime": "2026-06-11T08:44:22.023665Z",
+  "updateTime": "2026-06-11T08:44:22.023665Z",
+  "fields": {
+   "name": "DAHUA WISSUALRAM-FIRE ALARM SYSTEM",
+   "bannerBase64": {
+    "source": "bannerBase64",
+    "file": "images/brand_DAHUA WISSUALRAM-FIRE ALARM SYSTEM_bannerBase64.jpg",
+    "mime": "image/jpeg",
+    "bytes": 95165,
+    "sha256": "e06c43ec074ca49a72fb1a710541ecb95f5fe0244e36952bccd99c611c0fde40"
+   },
+   "title": "",
+   "subtitle": ""
+  }
+ },
+ {
+  "id": "ITC",
+  "createTime": "2026-08-06T03:37:22.638809Z",
+  "updateTime": "2026-08-06T03:37:22.638809Z",
+  "fields": {
+   "subtitle": "Premium amplifiers, speakers, microphones, and commercial PA systems engineered for exceptional performance.",
+   "bannerBase64": null,
+   "name": "ITC",
+   "title": "Professional Audio Solutions"
+  }
+ },
+ {
+  "id": "NJOY",
+  "createTime": "2026-07-15T06:05:59.455267Z",
+  "updateTime": "2026-07-15T06:07:30.044905Z",
+  "fields": {
+   "bannerBase64": {
+    "source": "bannerBase64",
+    "file": "images/brand_NJOY_bannerBase64.jpg",
+    "mime": "image/jpeg",
+    "bytes": 105821,
+    "sha256": "41b52c68cdc852079582fff66ec962afcf67868d028669b71c7d7be3ecd26a03"
+   },
+   "name": "NJOY",
+   "title": "NJOY Solutions ",
+   "subtitle": "Reliable UPS, Power Backup & Protection Solutions for Home, Business and Enterprise."
+  }
+ },
+ {
+  "id": "STARLINK",
+  "createTime": "2026-08-15T10:53:49.864100Z",
+  "updateTime": "2026-09-12T15:07:49.453835Z",
+  "fields": {
+   "bannerBase64": {
+    "source": "bannerBase64",
+    "file": "images/brand_STARLINK_bannerBase64.jpg",
+    "mime": "image/jpeg",
+    "bytes": 149144,
+    "sha256": "f483bfb575451b2e01c0908e3349e853a853722bca4f75b47e5d132b03646155"
+   },
+   "subtitle": "",
+   "name": "STARLINK",
+   "title": "STARLINK&CAMLINK PRODUCTS"
+  }
+ }
+]

@@ -1,0 +1,323 @@
+rules_version = '2';
+
+// Wider Universal catalog — Firestore Security Rules
+//
+// Roles: a user is an administrator only when their ID token carries the custom
+// claim `admin: true`. That claim can only be set server-side with the Admin SDK
+// (scripts/set-admin.ts). There is no client path to become an administrator.
+//
+// Audit trail: every write that changes a selling price, offer or stock field must
+// be committed in the same batch as a `priceHistory` change-set document written by
+// the same administrator at the same request time, and the product must reference
+// it through `lastChangeId`. This is enforced here, not only in the UI.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return signedIn() && request.auth.token.get('admin', false) == true;
+    }
+
+    function isNullableNumber(v) {
+      return v == null || ((v is int || v is float) && v >= 0);
+    }
+
+    function isNullableTimestamp(v) {
+      return v == null || v is timestamp;
+    }
+
+    function trackedFieldsChanged() {
+      return request.resource.data.diff(resource.data).affectedKeys()
+        .hasAny(['price', 'offerPrice', 'offerStart', 'offerEnd', 'stockStatus', 'stockQty', 'previousPrice']);
+    }
+
+    function changeSetCovers(productId) {
+      let h = getAfter(/databases/$(database)/documents/priceHistory/$(request.resource.data.lastChangeId));
+      return h != null
+        && h.data.by == request.auth.uid
+        && h.data.at == request.time
+        && productId in h.data.productIds;
+    }
+
+    // ------------------------------------------------------------ site configuration
+    // Mirrors validateSiteConfig() in src/lib/siteConfig.ts. Kept compact because rules may
+    // evaluate at most 1,000 expressions per request: every section's keys, types and lengths
+    // are checked here; the main website URL, logo path and contact details are pattern-checked;
+    // individual navigation/social link URLs are validated by the editor and re-checked when
+    // rendered (links that are not https:// or same-site paths are never displayed).
+
+    function txt(v, maxLen) {
+      return v is string && v.size() <= maxLen;
+    }
+
+    function req(v, maxLen) {
+      return v is string && v.size() > 0 && v.size() <= maxLen;
+    }
+
+    function links(l, maxCount) {
+      return l is list && l.size() <= maxCount;
+    }
+
+    function validCompany(c) {
+      return c.keys().hasOnly(['name', 'tagline', 'description', 'mainWebsiteUrl', 'logoPath', 'logoAlt'])
+        && req(c.name, 120) && txt(c.tagline, 160) && txt(c.description, 2000) && req(c.logoAlt, 160)
+        && c.mainWebsiteUrl is string && c.mainWebsiteUrl.size() <= 300
+        && c.mainWebsiteUrl.matches("^https://[A-Za-z0-9.-]+(:[0-9]+)?(/[^\\s\"'<>\\\\]*)?$")
+        && c.logoPath.matches("^(/brand/[A-Za-z0-9._-]+|branding/[A-Za-z0-9._-]+)$");
+    }
+
+    function validContact(c) {
+      return c.keys().hasOnly(['phone', 'whatsapp', 'email', 'address'])
+        && c.phone.matches("^([+0-9 ()-]{6,40})?$")
+        && c.whatsapp.matches("^[0-9]{0,20}$")
+        && txt(c.email, 120) && c.email.matches("^([^\\s@<>]+@[^\\s@<>]+[.][A-Za-z]{2,})?$")
+        && txt(c.address, 600);
+    }
+
+    function validHeader(h) {
+      return h.keys().hasOnly(['showLogo', 'showCompanyName', 'showMainWebsite', 'mainWebsiteLabel', 'showWhatsApp', 'whatsappLabel', 'navLinks'])
+        && h.showLogo is bool && h.showCompanyName is bool && h.showMainWebsite is bool && h.showWhatsApp is bool
+        && req(h.mainWebsiteLabel, 40) && req(h.whatsappLabel, 40) && links(h.navLinks, 8);
+    }
+
+    function validFooter(f) {
+      return f.keys().hasOnly(['showLogo', 'description', 'showMainWebsite', 'mainWebsiteLabel', 'links', 'showBrandLinks', 'copyright', 'social'])
+        && f.showLogo is bool && f.showMainWebsite is bool && f.showBrandLinks is bool
+        && txt(f.description, 2000) && req(f.mainWebsiteLabel, 40) && txt(f.copyright, 160)
+        && links(f.links, 8) && links(f.social, 6);
+    }
+
+    function validPages(p) {
+      return p.keys().hasOnly(['heroEyebrow', 'heroTitle', 'heroText', 'catalogIntro', 'aboutTitle', 'aboutText', 'contactTitle', 'contactText'])
+        && txt(p.heroEyebrow, 120) && req(p.heroTitle, 160) && txt(p.heroText, 600) && txt(p.catalogIntro, 600)
+        && txt(p.aboutTitle, 120) && txt(p.aboutText, 2000) && txt(p.contactTitle, 120) && txt(p.contactText, 2000);
+    }
+
+    function validCatalogSettings(c) {
+      return c.keys().hasOnly(['showStock', 'lowStockThreshold', 'layout', 'wideMinWidth', 'visitorLayoutSwitch'])
+        && c.showStock is bool && c.lowStockThreshold is int && c.lowStockThreshold >= 0 && c.lowStockThreshold <= 100000
+        && c.get('layout', 'auto') in ['auto', 'standard']
+        && c.get('wideMinWidth', 1600) in [1440, 1600, 1920]
+        && c.get('visitorLayoutSwitch', false) is bool;
+    }
+
+    function validPdf(p) {
+      return p.keys().hasOnly(['showLogo', 'title', 'tagline', 'footerText', 'showContact', 'showWebsite'])
+        && p.showLogo is bool && p.showContact is bool && p.showWebsite is bool
+        && req(p.title, 120) && txt(p.tagline, 160) && txt(p.footerText, 300);
+    }
+
+    function validSiteConfig(d) {
+      return d.keys().hasOnly(['version', 'company', 'contact', 'header', 'footer', 'pages', 'catalog', 'pdf',
+                               'updatedAt', 'updatedBy', 'updatedByEmail', 'lastChangeId'])
+        && d.version is int && d.version >= 1
+        && validCompany(d.company) && validContact(d.contact) && validHeader(d.header) && validFooter(d.footer)
+        && validPages(d.pages) && validCatalogSettings(d.catalog) && validPdf(d.pdf)
+        && d.updatedByEmail is string && d.lastChangeId is string;
+    }
+
+    function settingsChangeRecorded(changeId) {
+      let h = getAfter(/databases/$(database)/documents/settingsHistory/$(changeId));
+      return h != null && h.data.by == request.auth.uid && h.data.at == request.time;
+    }
+
+    function validProduct(d) {
+      return d.keys().hasOnly([
+          'sku', 'model', 'name', 'brand', 'category', 'subcategory', 'description',
+          'features', 'specs', 'imageUrl', 'imagePath', 'datasheetUrl', 'sourceUrl',
+          'price', 'offerPrice', 'offerStart', 'offerEnd', 'offerText', 'previousPrice', 'priceChangedAt',
+          'stockStatus', 'stockQty', 'status', 'searchText', 'sortOrder',
+          'createdAt', 'updatedAt', 'updatedBy', 'lastChangeId'])
+        && d.keys().hasAll(['sku', 'name', 'brand', 'status', 'stockStatus', 'price', 'offerPrice', 'updatedAt', 'updatedBy', 'lastChangeId'])
+        && d.sku is string && d.sku.size() > 0 && d.sku.size() <= 120
+        && d.name is string && d.name.size() > 0 && d.name.size() <= 500
+        && d.brand is string && d.brand.size() <= 120
+        && d.status in ['published', 'draft', 'archived']
+        && d.stockStatus in ['in_stock', 'low_stock', 'out_of_stock', 'on_request']
+        && isNullableNumber(d.price)
+        && isNullableNumber(d.offerPrice)
+        && (d.offerPrice == null || d.price == null || d.offerPrice < d.price)
+        && isNullableNumber(d.get('stockQty', null))
+        && isNullableTimestamp(d.get('offerStart', null))
+        && isNullableTimestamp(d.get('offerEnd', null))
+        && isNullableNumber(d.get('previousPrice', null))
+        && isNullableTimestamp(d.get('priceChangedAt', null))
+        && d.get('features', []) is list
+        && d.get('specs', []) is list
+        && d.updatedBy == request.auth.uid
+        && d.updatedAt == request.time
+        && d.lastChangeId is string;
+    }
+
+    // Price-drop integrity: previousPrice can only be the price actually stored before a
+    // price change (stamped with the server time), or be cleared. It can never be invented.
+    function priceHistoryHonest() {
+      let d = request.resource.data;
+      let old = resource.data;
+      return old.price != d.price
+        ? d.get('previousPrice', null) == old.price && d.get('priceChangedAt', null) == request.time
+        : (d.get('previousPrice', null) == null || d.get('previousPrice', null) == old.get('previousPrice', null))
+          && d.get('priceChangedAt', null) == old.get('priceChangedAt', null);
+    }
+
+    // ---------------------------------------------------------------- public catalog
+    match /products/{productId} {
+      allow get, list: if resource.data.status == 'published' || isAdmin();
+
+      allow create: if isAdmin()
+        && validProduct(request.resource.data)
+        && request.resource.data.get('previousPrice', null) == null
+        && changeSetCovers(productId);
+
+      allow update: if isAdmin()
+        && validProduct(request.resource.data)
+        && priceHistoryHonest()
+        && (!trackedFieldsChanged()
+            || (request.resource.data.lastChangeId != resource.data.lastChangeId && changeSetCovers(productId)));
+
+      allow delete: if isAdmin();
+    }
+
+    // Reference data from the source catalog (including source prices). Never public.
+    match /productSources/{productId} {
+      allow read: if isAdmin();
+      // Only review fields may be changed from the dashboard; source values are written by the seed script.
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['verification', 'reviewNotes', 'reviewedBy', 'reviewedAt'])
+        && request.resource.data.reviewedBy == request.auth.uid
+        && request.resource.data.reviewedAt == request.time;
+      allow create, delete: if false;
+    }
+
+    // Compact public catalog index (published products only, public fields only),
+    // rebuilt by administrators' dashboards and the CLI scripts.
+    match /catalogIndex/{part} {
+      allow read: if true;
+      allow write: if isAdmin()
+        && (request.resource == null
+            || (part == 'meta' && request.resource.data.keys().hasOnly(['hash', 'parts', 'count', 'updatedAt']))
+            || (part.matches('part-[0-9]+') && request.resource.data.keys().hasOnly(['hash', 'items'])
+                && request.resource.data.items is list));
+    }
+
+    match /brands/{id} {
+      allow read: if true;
+      allow write: if isAdmin()
+        && (request.resource == null
+            || (request.resource.data.keys().hasOnly(['name', 'order', 'headline', 'subtitle', 'bannerPath'])
+                && req(request.resource.data.name, 120)
+                && txt(request.resource.data.get('headline', ''), 120)
+                && txt(request.resource.data.get('subtitle', ''), 300)
+                && request.resource.data.get('bannerPath', '').matches('^(brands/' + id + '/[A-Za-z0-9._-]+)?$')));
+    }
+
+    match /categories/{id} {
+      allow read: if true;
+      allow write: if isAdmin()
+        && (request.resource == null
+            || (request.resource.data.name is string && request.resource.data.name.size() > 0));
+    }
+
+    // Legacy public settings (read for backward compatibility; superseded by settings/site).
+    match /settings/public {
+      allow read: if true;
+      allow write: if isAdmin()
+        && request.resource.data.keys().hasOnly(['companyName', 'phone', 'whatsapp', 'email', 'address',
+                                                 'showStock', 'lowStockThreshold', 'priceListNote']);
+    }
+
+    // Published website / branding / PDF configuration. Every write is schema-validated
+    // and must be committed together with its settingsHistory audit record. The document
+    // cannot be deleted, so the last valid configuration always remains.
+    match /settings/site {
+      allow read: if true;
+      allow create, update: if isAdmin()
+        && validSiteConfig(request.resource.data)
+        && request.resource.data.updatedBy == request.auth.uid
+        && request.resource.data.updatedAt == request.time
+        && settingsChangeRecorded(request.resource.data.lastChangeId);
+      allow delete: if false;
+    }
+
+    // Branch contact directory for the public /contact page (edited in Admin → Contacts).
+    // Shape and sizes are checked here; each phone number and email is validated by the
+    // editor and again before display (rules cannot iterate over nested lists).
+    match /contactDirectory/{docId} {
+      allow read: if docId == 'published';
+      allow create, update: if isAdmin()
+        && docId == 'published'
+        && request.resource.data.keys().hasOnly(['version', 'title', 'intro', 'branches',
+                                                 'updatedAt', 'updatedBy', 'updatedByEmail', 'lastChangeId'])
+        && request.resource.data.version is int
+        && req(request.resource.data.title, 120)
+        && txt(request.resource.data.intro, 600)
+        && request.resource.data.branches is list
+        && request.resource.data.branches.size() <= 20
+        && request.resource.data.updatedBy == request.auth.uid
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.updatedByEmail is string
+        && settingsChangeRecorded(request.resource.data.lastChangeId);
+      allow delete: if false;
+    }
+
+    // No other settings documents exist; deny everything else.
+    match /settings/{other} {
+      allow read, write: if false;
+    }
+
+    // Append-only audit trail of website settings changes.
+    match /settingsHistory/{changeId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin()
+        && request.resource.data.keys().hasOnly(['by', 'byEmail', 'at', 'changed', 'before', 'after', 'note'])
+        && request.resource.data.by == request.auth.uid
+        && request.resource.data.at == request.time
+        && request.resource.data.changed is list
+        && request.resource.data.after is map
+        && request.resource.data.note is string
+        && request.resource.data.note.size() <= 200;
+      allow update, delete: if false;
+    }
+
+    // Append-only audit trail.
+    match /priceHistory/{changeId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin()
+        && request.resource.data.by == request.auth.uid
+        && request.resource.data.at == request.time
+        && request.resource.data.productIds is list
+        && request.resource.data.productIds.size() > 0
+        && request.resource.data.productIds.size() <= 450
+        && request.resource.data.changes is list
+        && request.resource.data.reason in ['manual', 'import', 'bulk', 'revert', 'create'];
+      allow update, delete: if false;
+    }
+
+    match /importJobs/{jobId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin() && request.resource.data.by == request.auth.uid;
+      allow update: if isAdmin() && request.resource.data.by == resource.data.by;
+      allow delete: if false;
+
+      match /chunks/{chunkId} {
+        allow read: if isAdmin();
+        allow create: if isAdmin();
+        allow update, delete: if false;
+      }
+    }
+
+    // Admin profiles are written only by the server-side script.
+    match /users/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
+      allow write: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,0 +1,35 @@
+{
+ "extracted_at": "2026-10-15T12:30:22+00:00",
+ "pdf_files_received": 11,
+ "pdf_files_processed": 11,
+ "pages": 69,
+ "declared_products": 1291,
+ "extracted_rows": 1291,
+ "unique_model_keys": 1286,
+ "valid_prices": 1290,
+ "match_status": {
+  "EXACT_MATCH": 1279,
+  "VERIFIED_MATCH": 10,
+  "REVIEW_REQUIRED": 2
+ },
+ "planned_updates": 1289,
+ "price_differs_from_snapshot": 0,
+ "existing_selling_price_present": 10,
+ "website_products_without_pdf_price": [
+  {
+   "id": "ref-aoobHBdKj1Ve8JCoJMlf",
+   "model": "SLF-06",
+   "brand": "STARLINK",
+   "status": "published"
+  },
+  {
+   "id": "ref-nIfSqCqHVNJNZJRv4TIM",
+   "model": "SL59-100",
+   "brand": "STARLINK",
+   "status": "published"
+  }
+ ],
+ "errors": {
+  "PRICE_NOT_POSITIVE": 1
+ }
+}

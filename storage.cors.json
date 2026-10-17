@@ -1,0 +1,8 @@
+[
+  {
+    "origin": ["https://REPLACE-WITH-YOUR-DOMAIN", "https://REPLACE-WITH-PROJECT-ID.web.app", "https://REPLACE-WITH-PROJECT-ID.firebaseapp.com"],
+    "method": ["GET", "HEAD"],
+    "responseHeader": ["Content-Type"],
+    "maxAgeSeconds": 3600
+  }
+]

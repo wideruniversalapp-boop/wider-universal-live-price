@@ -1,0 +1,7 @@
+{
+  "projects": {
+    "default": "demo-wider",
+    "staging": "REPLACE-WITH-STAGING-PROJECT-ID",
+    "production": "REPLACE-WITH-PRODUCTION-PROJECT-ID"
+  }
+}

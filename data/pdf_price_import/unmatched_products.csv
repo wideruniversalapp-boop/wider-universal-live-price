@@ -1,0 +1,3 @@
+﻿match_status,match_method,pdf_file,pdf_page,row_no,pdf_brand_label,model_joined,description,price_text,price_sar,product_id,db_model,db_sku,db_name,db_brand,db_status,warnings
+REVIEW_REQUIRED,exact SKU,Simat_Security_STARLINK_Price_List_2026-10-15.pdf,1,5,STARLINK,SL59-100,STAR LINK RG-59 CABLE 100 MTR,SAR 70,70,ref-nIfSqCqHVNJNZJRv4TIM,SL59-100,SL59-100,STAR LINK RG-59 CABLE 100 MTR,STARLINK,published,PDF shows a rounded price; catalog source data has 70.2
+REVIEW_REQUIRED,exact model (price unusable),Simat_Security_STARLINK_Price_List_2026-10-15.pdf,1,6,STARLINK,SLF-06,F-CONNECTOR,SAR 0,,ref-aoobHBdKj1Ve8JCoJMlf,SLF-06,SLF-06,F-CONNECTOR,STARLINK,published,unreadable price or model; PDF shows SAR 0; catalog source data has 0.45 (rounded down in the PDF)

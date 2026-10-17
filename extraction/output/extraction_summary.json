@@ -1,0 +1,27 @@
+{
+ "extracted_at": "2026-10-15T10:10:50+00:00",
+ "ordered_query_count": 1291,
+ "collection_listing_count": 1291,
+ "not_reachable_via_site_query": [],
+ "records_written": 1291,
+ "duplicate_model_groups": {
+  "DH-SD5A825MA-HNR": [
+   "JRKaxZ0xz0kAztXwlyuF",
+   "LUhC8Fx8YG5A84nh82SA"
+  ],
+  "DH-SDT6C432-4P-GB-APV-0280": [
+   "gCcEajbvpw813G07TTtk",
+   "IrV3pLk089PESsxsrYRI"
+  ],
+  "DH-HAC-HFW1801THN-I8-A": [
+   "EMI2ZeUB3ixEhf7lzQIZ",
+   "qWbKcTQE6nXLtxPajr8I"
+  ],
+  "DH-HAC-HFW1500RLN-IL-A": [
+   "BOApjpiVzzXtvunqoCVp",
+   "BvNtRFuYOJ9ebIRkqssl"
+  ]
+ },
+ "brands": 5,
+ "errors": 189
+}
